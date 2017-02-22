@@ -12,11 +12,10 @@
 
 int main(void){
   struct in_addr s_addr, sin_addr;
-  int client, so, bi, len;
+  int client, so, bi, len,  STOP=1;
   struct sockaddr_in loc, rem, serv, sin_family, sin_port;
   socklen_t addlen = sizeof(loc);
   char buf[BUF_LEN], received_data[1024];
-
 
   so = socket(AF_INET, SOCK_STREAM,0);
 	if(so < 0){
@@ -45,24 +44,30 @@ int main(void){
 
 	   client = accept(so, (struct sockaddr*)&rem, &addlen);
      puts("Accept\n");
-     while(1){
+     while(STOP){
+       len= recv(client, received_data, 1024, 0);
+       received_data[len]='\0';
+       if(len == 0){
+         puts("Client desconectado");
+         fflush(stdout);
+       }
+       else if(len == -1){
+         printf("Recv falhou");
+       }
+       else{
+         printf("\n Dados recebidos = %s\n", received_data);
+       }
+
+
+       if (received_data[0]=='#'){
+   			printf("\nChat terminado\n");
+   			STOP=0;
+   			continue;
+   		}
+
        gets(buf);
        send(client, buf, strlen(buf), 0);
-      //  printf("Aguardar resposta...");
-
-      len= recv(client, received_data, 1024, 0);
-      received_data[len]='\0';
-
-      if(len == 0){
-        puts("Client disconnected");
-        fflush(stdout);
-      }
-      else if(len == -1){
-        perror("recv failed");
-      }
-      else{
-        printf("\n Dados recebidos = %s\n", received_data);
-      }
+       printf("Mensagem enviada: %lu", strlen(buf));
 
     }
   }

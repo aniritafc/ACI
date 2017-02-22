@@ -11,9 +11,9 @@
 #define BUF_LEN 2000
 
 
-int main(){
+int main(void){
 
-  int sock, recebido, servidor, len;
+  int sock, recebido, servidor, len,STOP=1;
   struct sockaddr_in server;
   char send_data[1024], received_data[1024];
   printf("Cliente\n");
@@ -33,28 +33,30 @@ int main(){
 
   //Connect to remote server
   if (connect(sock, (struct sockaddr*)&server , sizeof(server))< 0){
-    perror("Connect failed");
+    perror("Conecção falhou");
     return 1;
   }
 
   else{
-    puts("Connected\n");
+    puts("Conectado\n");
   }
 
-  while(1){
+  while(STOP){
+    gets(send_data);
+    puts("A escrever: ");
+    send(sock, send_data, 1024, 0);
+
     len=recv(sock, received_data, 1024, 0);
     received_data[len]='\0';
     if(len>0){
         printf("Mensagem recebida: %s\n", received_data);
     }
-    gets(send_data);
-    puts("A escrever: ");
-    send(sock, send_data, 1024, 0);
-  //  if(send(sock, send_data,1024, 0) < 0){
-    //  puts("Send failed");
-    //  return 1;
-    //}
 
+    if(received_data[0]=='#'){
+		  printf("\nChat terminado\n");
+			STOP=0;
+			continue;
+	  }
   }
   close(sock);
   return 0;
